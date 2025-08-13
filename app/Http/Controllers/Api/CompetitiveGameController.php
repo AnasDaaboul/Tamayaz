@@ -27,7 +27,7 @@ class CompetitiveGameController extends Controller
     public function createMatch(Request $request)
     {
         $user_id = auth()->id();
-        dd($user_id);
+        // dd($user_id);
         $validator = Validator::make($request->all(), [
             'match_name' => 'required|string|max:255',
             'player1_name' => 'required|string|max:255',
@@ -145,6 +145,7 @@ class CompetitiveGameController extends Controller
                             return [
                                 'id' => $media->id,
                                 'file_name' => $media->file_name,
+                                'image_url'=> "https://backend1.tamayaz.tech/api/get-image/" . $media?->id . "/" . $media?->file_name,
                             ];
                         })->toArray();
                         return $questionArray;
@@ -277,9 +278,10 @@ public function myGames()
 {
     $user = auth()->user();
     $student_id = $user->userable_id;
-    $matches = CompetitiveMatch::whereHas('studentCompetitiveQuestionLocks', function($query) use ($student_id) {
-        $query->where('student_id', $student_id);
-    })->get();
+    // $matches = CompetitiveMatch::whereHas('studentCompetitiveQuestionLocks', function($query) use ($student_id) {
+    //     $query->where('student_id', $student_id);
+    // })->get();
+    $matches = CompetitiveMatch::where('user_id', $user->id)->get();
     
     return response()->json([
         'message' => 'Your games retrieved successfully',
@@ -663,7 +665,7 @@ public function getMatchQuestions(Request $request)
                 return [
                     'id' => $unit->id,
                     'name' => $unit->name,
-                    'media' => $unit->getMedia()->map(fn($m) => [
+                    'media' => $unit->media->map(fn($m) => [
                         // dd($m),
                         'id' => $m->id,
                         'file_name' => $m->file_name,
@@ -978,8 +980,3 @@ public function useThirdLifeline(Request $request)
 
 
 }
-
-
-
-
-
