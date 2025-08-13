@@ -1,0 +1,19 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+php_value memory_limit 32768M
+php_value post_max_size 32768M
+php_value upload_max_filesize 32768M
+php_value max_execution_time 3000000
+php_value output_buffering Off
+php_value zlib.output_compression Off
+
+# CORS Headers to support Range requests
+<IfModule mod_headers.c>
+  Header always set Access-Control-Allow-Origin "*"
+  Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+  Header always set Access-Control-Allow-Headers "Range, Content-Type, Authorization"
+  Header always set Accept-Ranges "bytes"
+</IfModule>
