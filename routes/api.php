@@ -87,6 +87,8 @@ Route::prefix('competitive-game')->middleware('auth:api')->group(function () { /
     Route::post('change-question', [CompetitiveGameController::class, 'changeQuestion']);
     Route::post('get-question-options', [CompetitiveGameController::class, 'getQuestionOptions']);
     Route::post('use-third-lifeline', [CompetitiveGameController::class, 'useThirdLifeline']);
+    Route::post('use-fourth-lifeline', [CompetitiveGameController::class, 'useFourthLifeline']);
+    Route::post('use-updown-lifeline', [CompetitiveGameController::class, 'useUpDownLifeline']);
 
 });
 Route::post('course-information' , [CourseEnrollController::class , 'getCourseTeacherInformation']);
