@@ -217,7 +217,7 @@ class CompetitiveGameController extends Controller
             foreach ($allQuestions as $question) {
                 // dd($question['id']);
                  StudentCompetitiveQuestionLock::create([
-                     'student_id' => auth()->id(),
+                     'student_id' => $student_id,
                      'competitive_question_id' => $question['id'],
                      'locked'=>1,
                      'competitive_match_id'=>$match_id
@@ -338,7 +338,7 @@ public function submitAnswer(Request $request)
         'question_id' => $question->id,
         'question_difficulty' => $question->difficulty,
         'is_correct' => $isCorrect,
-        'user_id' => $student_id,
+        'user_id' => $user_id,
         'answered' => isset($validated['player_id']) ? 1 : 0,
         'player_number' => $validated['player_id'] ?? 0,
         'points_earned' => isset($validated['player_id']) ? $points : 0
@@ -695,7 +695,7 @@ public function getMatchQuestions(Request $request)
     
     // Return response with all data
     return response()->json([
-        'questions_by_unit' => $questionsByUnit,
+        'questions' => $questionsByUnit,
         'lifelines' => [
             'player1' => [
                 'change_question_used' => $player1Lifeline->change_question_used,
@@ -894,6 +894,7 @@ public function useUpDownLifeline(Request $request)
         'points_earned' => $isCorrect ? $pointsToTransfer : 0
     ]);
 }
+
 
 public function useFourthLifeline(Request $request)
 {
