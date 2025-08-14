@@ -555,7 +555,7 @@ public function getMatchQuestions(Request $request)
     }
 
     $user_id = auth()->id();
-     $user = User::find($user_id);
+    $user = User::find($user_id);
     $student_id = $user->userable_id;
     $match_id = $request->match_id;
     
@@ -666,7 +666,6 @@ public function getMatchQuestions(Request $request)
                     'id' => $unit->id,
                     'name' => $unit->name,
                     'media' => $unit->media->map(fn($m) => [
-                        // dd($m),
                         'id' => $m->id,
                         'file_name' => $m->file_name,
                         'image_url'=> "https://backend1.tamayaz.tech/api/get-image/" . $m?->id . "/" . $m?->file_name,
@@ -693,25 +692,42 @@ public function getMatchQuestions(Request $request)
         'updown_lifeline_used' => false
     ]);
     
-    // Return response with all data
-    return response()->json([
-        'questions' => $questionsByUnit,
-        'lifelines' => [
-            'player1' => [
-                'change_question_used' => $player1Lifeline->change_question_used,
-                'get_options_used' => $player1Lifeline->get_options_used,
-                'third_lifeline_used' => $player1Lifeline->third_lifeline_used,
-                'fourth_lifeline_used' => $player1Lifeline->fourth_lifeline_used,
-                'updown_lifeline_used' => $player1Lifeline->updown_lifeline_used
-            ],
-            'player2' => [
-                'change_question_used' => $player2Lifeline->change_question_used,
-                'get_options_used' => $player2Lifeline->get_options_used,
-                'third_lifeline_used' => $player2Lifeline->third_lifeline_used,
-                'fourth_lifeline_used' => $player2Lifeline->fourth_lifeline_used,
-                'updown_lifeline_used' => $player2Lifeline->updown_lifeline_used
-            ]
+    // Format match data
+    $matchData = [
+        'id' => $match->id,
+        'match_name' => $match->match_name,
+        'player1_name' => $match->player1_name,
+        'player2_name' => $match->player2_name,
+        'player1_score' => $match->player1_score,
+        'player2_score' => $match->player2_score,
+        'status' => $match->status,
+        'current_player_number' => $player_number
+    ];
+    
+    // Format lifelines data
+    $lifelinesData = [
+        'player1' => [
+            'change_question_used' => $player1Lifeline->change_question_used,
+            'get_options_used' => $player1Lifeline->get_options_used,
+            'third_lifeline_used' => $player1Lifeline->third_lifeline_used,
+            'fourth_lifeline_used' => $player1Lifeline->fourth_lifeline_used,
+            'updown_lifeline_used' => $player1Lifeline->updown_lifeline_used
         ],
+        'player2' => [
+            'change_question_used' => $player2Lifeline->change_question_used,
+            'get_options_used' => $player2Lifeline->get_options_used,
+            'third_lifeline_used' => $player2Lifeline->third_lifeline_used,
+            'fourth_lifeline_used' => $player2Lifeline->fourth_lifeline_used,
+            'updown_lifeline_used' => $player2Lifeline->updown_lifeline_used
+        ]
+    ];
+    
+    // Return response with all data in the requested format
+    return response()->json([
+        'message' => 'Match questions retrieved succesfully',
+        'match' => $matchData,
+        'questions' => $questionsByUnit,
+        'lifelines' => $lifelinesData,
         'selected_topics' => $selectedTopics
     ]);
 }
