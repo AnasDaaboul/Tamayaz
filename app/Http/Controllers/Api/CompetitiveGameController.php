@@ -370,9 +370,9 @@ public function submitAnswer(Request $request)
 private function calculatePoints($difficulty)
 {
     return match(strtolower($difficulty)) {
-        'hard' => 300,
-        'medium' => 200,
-        'easy' => 100,
+        'hard' => 600,
+        'medium' => 400,
+        'easy' => 200,
         default => 0
     };
 }
