@@ -300,8 +300,8 @@ public function submitAnswer(Request $request)
         'question_id' => 'required|exists:competitive_questions,id',
         'answer' => 'required|string',
         'player_id' => 'integer|in:1,2',
-        'player1_score' => 'required|integer|min:0',
-        'player2_score' => 'required|integer|min:0'
+        'player1_score' => 'required|integer',
+        'player2_score' => 'required|integer'
     ]);
 
     // Check if the user is the creator of this match
