@@ -757,11 +757,7 @@ public function useUpDownLifeline(Request $request)
 {
     $validator = Validator::make($request->all(), [
         'match_id' => 'required|exists:competitive_matches,id',
-        'player_id' => 'required|in:1,2',
-        'question_id' => 'required|exists:competitive_questions,id',
-        'answer' => 'required|string',
-        'player1_score' => 'required|integer|min:0',
-        'player2_score' => 'required|integer|min:0'
+        'player_id' => 'required|in:1,2'
     ]);
 
     if ($validator->fails()) {
@@ -778,24 +774,6 @@ public function useUpDownLifeline(Request $request)
         
     if (!$isUserMatch) {
         return response()->json(['error' => 'You are not authorized to use lifelines for this match'], 403);
-    }
-    
-    // Check if the question is retrieved for this match
-    $questionLock = StudentCompetitiveQuestionLock::where('competitive_match_id', $request->match_id)
-        ->where('competitive_question_id', $request->question_id)
-        ->first();
-        
-    if (!$questionLock) {
-        return response()->json(['error' => 'This question is not retrieved for this match'], 400);
-    }
-    
-    // Check if the question is already answered
-    $existingAnswer = SenJem::where('competitive_match_id', $request->match_id)
-        ->where('question_id', $request->question_id)
-        ->first();
-        
-    if ($existingAnswer) {
-        return response()->json(['error' => 'This question is already answered'], 400);
     }
 
     // Get or create lifeline for this player number
@@ -818,80 +796,18 @@ public function useUpDownLifeline(Request $request)
         return response()->json(['error' => 'UpDown lifeline already used for this player'], 400);
     }
 
-    // Get question to determine points
-    $question = CompetitiveQuestion::findOrFail($request->question_id);
-    $isCorrect = $question->correct_answer === $request->answer;
-    $pointsToTransfer = 0;
-    $player1Score = $request->player1_score;
-    $player2Score = $request->player2_score;
-    
-    // Only calculate and transfer points if the answer is correct
-    if ($isCorrect) {
-        // Determine points based on difficulty
-        switch (strtolower($question->difficulty)) {
-            case 'easy':
-                $pointsToTransfer = 200;
-                break;
-            case 'medium':
-                $pointsToTransfer = 300;
-                break;
-            case 'hard':
-                $pointsToTransfer = 400;
-                break;
-            default:
-                $pointsToTransfer = 200;
-        }
-
-        // Update scores
-        $currentPlayerNumber = $request->player_id;
-        $otherPlayerNumber = $currentPlayerNumber == 1 ? 2 : 1;
-        
-        // Transfer points
-        if ($currentPlayerNumber == 1) {
-            $player1Score += $pointsToTransfer;
-            $player2Score = max(0, $player2Score - $pointsToTransfer); // Ensure score doesn't go below 0
-        } else {
-            $player2Score += $pointsToTransfer;
-            $player1Score = max(0, $player1Score - $pointsToTransfer); // Ensure score doesn't go below 0
-        }
-        
-        // Update match scores
-        $match->update([
-            'player1_score' => $player1Score,
-            'player2_score' => $player2Score
-        ]);
-    }
-
     // Mark lifeline as used
     $playerLifeline->update(['updown_lifeline_used' => true]);
-    
-    // Mark the question as answered
-    SenJem::create([
-        'competitive_match_id' => $request->match_id,
-        'question_id' => $request->question_id,
-        'question_difficulty' => $question->difficulty,
-        'is_correct' => $isCorrect,
-        'user_id' => $user_id,
-        'answered' => 1,
-        'player_number' => $request->player_id,
-        'points_earned' => $isCorrect ? $pointsToTransfer : 0 // Points only if correct
-    ]);
 
     return response()->json([
         'message' => 'UpDown lifeline used successfully',
-        'is_correct' => $isCorrect,
         'lifeline_status' => [
             'change_question_used' => $playerLifeline->change_question_used,
             'get_options_used' => $playerLifeline->get_options_used,
             'third_lifeline_used' => $playerLifeline->third_lifeline_used,
             'fourth_lifeline_used' => $playerLifeline->fourth_lifeline_used,
             'updown_lifeline_used' => true
-        ],
-        'updated_scores' => [
-            'player1_score' => $player1Score,
-            'player2_score' => $player2Score
-        ],
-        'points_earned' => $isCorrect ? $pointsToTransfer : 0
+        ]
     ]);
 }
 
